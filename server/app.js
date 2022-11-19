@@ -3,9 +3,10 @@ import 'express-async-errors';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import { Server } from 'socket.io';
 import { config } from './config.js';
 import { db } from './database/database.js';
-import userRouter from './router/user.js';
+import authRouter from './router/auth.js';
 import orderRouter from './router/order.js';
 import refundRouter from './router/refund.js';
 import deliveryRouter from './router/delivery.js';
@@ -19,7 +20,7 @@ app.use(cors());
 app.use(morgan('tiny'));
 app.use(helmet());
 
-app.use('/user', userRouter);
+app.use('/auth', authRouter);
 app.use('/order', orderRouter);
 app.use('/refund', refundRouter);
 app.use('/delivery', deliveryRouter);
@@ -38,4 +39,15 @@ db.getConnection();
 
 const server = app.listen(config.host.port, () => {
     console.log('server is on ...');
+});
+
+const socketIO = new Server(server, {
+    cors: {
+        origin: '*',
+    },
+});
+
+socketIO.on('connection', (socket) => {
+    console.log('Client is here!');
+    socketIO.emit('review', 'Hello!');
 });
